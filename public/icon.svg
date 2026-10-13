@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="ios-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#007AFF" />
+      <stop offset="50%" stop-color="#4F46E5" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-opacity="0.25" />
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#ios-gradient)" />
+  <g filter="url(#shadow)">
+    <!-- Outer Progress Track -->
+    <circle cx="256" cy="256" r="140" fill="none" stroke="rgba(255, 255, 255, 0.25)" stroke-width="28" stroke-linecap="round" />
+    <!-- Progress Indicator -->
+    <circle cx="256" cy="256" r="140" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-dasharray="880" stroke-dashoffset="220" stroke-linecap="round" transform="rotate(-90 256 256)" />
+    <!-- Checkmark -->
+    <path d="M196 256 L236 296 L320 206" fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

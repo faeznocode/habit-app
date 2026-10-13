@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "Habit": {
+      "title": "Habit",
+      "description": "A habit item tracked by the user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 100 },
+        "cue": { "type": "string", "maxLength": 200 },
+        "category": { "type": "string", "enum": ["health", "fitness", "mind", "productivity", "lifestyle", "learning", "finance"] },
+        "color": { "type": "string", "maxLength": 30 },
+        "icon": { "type": "string", "maxLength": 50 },
+        "timeOfDay": { "type": "string", "enum": ["anytime", "morning", "afternoon", "evening"] },
+        "frequency": { "type": "string", "enum": ["daily", "weekdays", "weekends"] },
+        "targetType": { "type": "string", "enum": ["boolean", "numeric"] },
+        "targetValue": { "type": "number" },
+        "unit": { "type": "string", "maxLength": 30 },
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "archived": { "type": "boolean" }
+      },
+      "required": ["id", "title", "category", "color", "icon", "timeOfDay", "frequency", "targetType", "createdAt"]
+    },
+    "HabitLog": {
+      "title": "HabitLog",
+      "description": "Daily completion logs for habits on a given date",
+      "type": "object",
+      "properties": {
+        "dateKey": { "type": "string", "maxLength": 20 },
+        "entries": { "type": "object" },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["dateKey", "entries"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/habits/{habitId}": {
+      "schema": "Habit",
+      "description": "Private habits belonging to the authenticated user"
+    },
+    "/users/{userId}/habit_logs/{dateKey}": {
+      "schema": "HabitLog",
+      "description": "Private daily habit completion records belonging to the authenticated user"
+    }
+  }
+}

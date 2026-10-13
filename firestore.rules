@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isValidHabit(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.title is string && data.title.size() <= 100 &&
+             data.category is string && data.category.size() <= 50 &&
+             data.color is string && data.color.size() <= 30 &&
+             data.icon is string && data.icon.size() <= 50 &&
+             data.timeOfDay is string && data.timeOfDay.size() <= 20 &&
+             data.frequency is string && data.frequency.size() <= 20 &&
+             data.targetType is string && data.targetType.size() <= 20;
+    }
+
+    function isValidHabitLog(data) {
+      return data.dateKey is string && data.dateKey.size() <= 20 &&
+             data.entries is map;
+    }
+
+    // Connection test document
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    // Single source of truth for admin authorization
+    // Managed manually via Firebase Console. All client-side modifications denied.
+    match /admins/{adminId} {
+      allow get: if isSignedIn() && request.auth.uid == adminId;
+      allow list: if false;
+      allow create, update, delete: if false;
+    }
+
+    // User-scoped profiles, private habits and logs
+    match /users/{userId} {
+      // Profile readable by the owner or authorized administrator
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Profile writable by the owner, but cannot grant admin role
+      allow create: if isOwner(userId) && (!('role' in incoming()) || incoming().role != 'admin');
+      allow update: if isOwner(userId) && (!('role' in incoming()) || incoming().role == resource.data.role);
+      allow delete: if isOwner(userId);
+
+      match /habits/{habitId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidId(habitId) && isValidHabit(incoming());
+        allow delete: if isOwner(userId) && isValidId(habitId);
+      }
+
+      match /habit_logs/{dateKey} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidId(dateKey) && isValidHabitLog(incoming());
+        allow delete: if isOwner(userId) && isValidId(dateKey);
+      }
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

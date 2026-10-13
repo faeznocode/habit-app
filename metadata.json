@@ -1,0 +1,8 @@
+{
+  "name": "Habits — Daily Routine & Habit Tracker",
+  "description": "A native iOS-inspired personal daily habit tracker with Cupertino styling, streak tracking, interactive progress rings, and offline PWA capability.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

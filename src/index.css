@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --ios-system-bg: #F2F2F7;
+    --ios-secondary-bg: #FFFFFF;
+    --ios-tertiary-bg: #E5E5EA;
+    --ios-label: #000000;
+    --ios-secondary-label: #8E8E93;
+    --ios-tertiary-label: #C7C7CC;
+    --ios-separator: rgba(60, 60, 67, 0.12);
+    --ios-blue: #007AFF;
+    --ios-green: #34C759;
+    --ios-orange: #FF9500;
+    --ios-red: #FF3B30;
+    --ios-purple: #AF52DE;
+    --ios-pink: #FF2D55;
+    --ios-teal: #30B0C7;
+    --ios-indigo: #5856D6;
+    --ios-yellow: #FFCC00;
+  }
+
+  :root.dark, .dark {
+    --ios-system-bg: #000000;
+    --ios-secondary-bg: #1C1C1E;
+    --ios-tertiary-bg: #2C2C2E;
+    --ios-label: #FFFFFF;
+    --ios-secondary-label: #8E8E93;
+    --ios-tertiary-label: #48484A;
+    --ios-separator: rgba(84, 84, 88, 0.36);
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+  }
+
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, -apple-system-body, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    background-color: var(--ios-system-bg);
+    color: var(--ios-label);
+  }
+
+  input, textarea {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+}
+
+/* iOS Safe Area Padding Helpers */
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 44px);
+}
+
+@media (min-width: 640px) {
+  .pt-safe {
+    padding-top: max(env(safe-area-inset-top, 0px), 16px);
+  }
+}
+
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+}
+
+@media (min-width: 640px) {
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+  }
+}
+
+.pb-safe-nav {
+  /* Generous clearance so the lowest card scrolls well above the fixed mobile bottom bar */
+  padding-bottom: calc(max(env(safe-area-inset-bottom, 0px), 16px) + 108px);
+}
+
+@media (min-width: 768px) {
+  .pb-safe-nav {
+    padding-bottom: 2.5rem;
+  }
+}
+
+/* iOS Hide Scrollbar for horizontal calendar strip while retaining smooth touch scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* iOS Glass & Clean Surfaces */
+.ios-blur {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.ios-card-shadow {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04), 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.dark .ios-card-shadow {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* Smooth rubberband scrolling */
+.ios-scroller {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
