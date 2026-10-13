@@ -50,6 +50,13 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Global app configuration (e.g. shared category list)
+    // Any signed-in user may read; only verified admins may write.
+    match /appConfig/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
     // User-scoped profiles, private habits and logs
     match /users/{userId} {
       // Profile readable by the owner or authorized administrator

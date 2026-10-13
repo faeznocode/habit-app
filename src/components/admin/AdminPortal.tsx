@@ -37,7 +37,7 @@ import {
   UserProfile,
 } from '../../services/adminService';
 import { UserSettings, CategoryInfo } from '../../types';
-import { loadCategories, saveCategories, resetCategoriesToDefaults } from '../../utils/categories';
+import { loadCategories, saveCategories, resetCategoriesToDefaults, subscribeCategories } from '../../utils/categories';
 import { IOS_SYSTEM_COLORS, HABIT_ICONS } from '../../utils/icons';
 import { triggerHaptic } from '../../utils/haptics';
 
@@ -74,6 +74,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   // Category management state
   const [categoriesList, setCategoriesList] = useState<CategoryInfo[]>(() => loadCategories());
+
+  // Real-time Firestore subscription for cross-device category sync
+  useEffect(() => {
+    const unsub = subscribeCategories((cats) => setCategoriesList(cats));
+    return unsub;
+  }, []);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryInfo | null>(null);
   const [categoryLabel, setCategoryLabel] = useState('');
@@ -159,9 +165,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     saveCategories(updated);
   };
 
-  const handleResetCategories = () => {
+  const handleResetCategories = async () => {
     triggerHaptic('medium');
-    const defaults = resetCategoriesToDefaults();
+    const defaults = await resetCategoriesToDefaults();
     setCategoriesList(defaults);
   };
 
@@ -474,7 +480,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </header>
 
         {/* Scrollable Subview Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 ios-scroller">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 ios-scroller pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-8">
           {/* SECTION 1: DASHBOARD OVERVIEW */}
           {activeSection === 'overview' && (
             <div className="max-w-6xl mx-auto space-y-6">
@@ -981,8 +987,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
       {/* Category Editor Modal Dialog */}
       {isCategoryModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-white dark:bg-[#1C1C1E] rounded-[24px] p-6 shadow-2xl border border-[rgba(60,60,67,0.12)] dark:border-[rgba(84,84,88,0.36)] space-y-5 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white dark:bg-[#1C1C1E] rounded-t-[28px] sm:rounded-[24px] p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 shadow-2xl border border-[rgba(60,60,67,0.12)] dark:border-[rgba(84,84,88,0.36)] space-y-5 animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 overflow-y-auto max-h-[92dvh] sm:max-h-[90vh] ios-scroller">
             <div className="flex items-center justify-between pb-2 border-b border-[rgba(60,60,67,0.08)] dark:border-[rgba(84,84,88,0.2)]">
               <h3 className="text-[18px] font-bold text-black dark:text-white">
                 {editingCategory ? 'Edit Category' : 'Add New Category'}
