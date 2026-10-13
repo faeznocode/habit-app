@@ -17,6 +17,7 @@ import {
   Info,
   LogOut,
   User as UserIcon,
+  Shield,
 } from 'lucide-react';
 import { triggerHaptic } from '../utils/haptics';
 import { usePWAInstall } from '../hooks/usePWAInstall';
@@ -34,6 +35,7 @@ interface SettingsTabProps {
   user?: User | null;
   onSignOut?: () => void;
   isAdmin?: boolean;
+  onOpenAdminPortal?: () => void;
 }
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({
@@ -46,6 +48,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   user,
   onSignOut,
   isAdmin = false,
+  onOpenAdminPortal,
 }) => {
   const { isInstalled, isIOS, isInstallable, install } = usePWAInstall();
   const [showIOSPrompt, setShowIOSPrompt] = useState(false);
@@ -518,6 +521,28 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                   Connected
                 </span>
               </div>
+
+              {/* Admin Portal Button — only shown on mobile for admins */}
+              {isAdmin && onOpenAdminPortal && (
+                <button
+                  onClick={() => {
+                    triggerHaptic('light');
+                    onOpenAdminPortal();
+                  }}
+                  className="w-full p-3.5 flex items-center justify-between active:bg-black/5 dark:active:bg-white/5 transition-colors text-left group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-[8px] bg-[#AF52DE]/15 text-[#AF52DE] flex items-center justify-center">
+                      <Shield className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-[16px] font-medium text-black dark:text-white">Admin Portal</p>
+                      <p className="text-[12px] text-[#8E8E93]">Manage users, habits & analytics</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[#8E8E93]" />
+                </button>
+              )}
 
               {/* Sign Out Button */}
               <button

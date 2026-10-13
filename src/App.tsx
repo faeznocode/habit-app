@@ -471,6 +471,7 @@ export default function App() {
               user={currentUser}
               onSignOut={handleSignOut}
               isAdmin={isAdmin}
+              onOpenAdminPortal={navigateToAdmin}
             />
           )}
         </main>
