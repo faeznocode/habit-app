@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Habit, HabitCategory } from '../types';
-import { loadCategories } from '../utils/categories';
+import { loadCategories, subscribeCategories } from '../utils/categories';
 import { getHabitIcon } from '../utils/icons';
 import { Plus, ChevronRight, Filter, X } from 'lucide-react';
 import { triggerHaptic } from '../utils/haptics';
@@ -20,9 +20,11 @@ export const HabitsTab: React.FC<HabitsTabProps> = ({
   const [categoriesList, setCategoriesList] = useState(() => loadCategories());
 
   useEffect(() => {
-    const sync = () => setCategoriesList(loadCategories());
-    window.addEventListener('habits_categories_updated', sync);
-    return () => window.removeEventListener('habits_categories_updated', sync);
+    const unsubscribe = subscribeCategories((cats) => {
+      setCategoriesList(cats);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Filter items
@@ -74,19 +76,17 @@ export const HabitsTab: React.FC<HabitsTabProps> = ({
               triggerHaptic('light');
               setSelectedCategory('all');
             }}
-            className={`px-3.5 py-1.5 rounded-[12px] text-[13px] font-medium shrink-0 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer ${
-              selectedCategory === 'all'
+            className={`px-3.5 py-1.5 rounded-[12px] text-[13px] font-medium shrink-0 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer ${selectedCategory === 'all'
                 ? 'bg-black text-white dark:bg-white dark:text-black font-semibold shadow-xs'
                 : 'bg-white dark:bg-[#1C1C1E] text-[#8E8E93] hover:text-black dark:hover:text-white border border-[rgba(60,60,67,0.08)] dark:border-[rgba(84,84,88,0.25)]'
-            }`}
+              }`}
           >
             <span>All</span>
             <span
-              className={`text-[11px] px-1.5 py-0.2 rounded-full ${
-                selectedCategory === 'all'
+              className={`text-[11px] px-1.5 py-0.2 rounded-full ${selectedCategory === 'all'
                   ? 'bg-white/20 text-white dark:bg-black/20 dark:text-black font-bold'
                   : 'bg-[#F2F2F7] dark:bg-[#2C2C2E] text-[#8E8E93]'
-              }`}
+                }`}
             >
               {habits.length}
             </span>
@@ -104,21 +104,19 @@ export const HabitsTab: React.FC<HabitsTabProps> = ({
                   triggerHaptic('light');
                   setSelectedCategory(cat.id);
                 }}
-                className={`px-3 py-1.5 rounded-[12px] text-[13px] font-medium shrink-0 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer ${
-                  isSelected
+                className={`px-3 py-1.5 rounded-[12px] text-[13px] font-medium shrink-0 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer ${isSelected
                     ? 'bg-[#007AFF] text-white font-semibold shadow-xs'
                     : 'bg-white dark:bg-[#1C1C1E] text-black dark:text-white hover:border-[#007AFF]/50 border border-[rgba(60,60,67,0.08)] dark:border-[rgba(84,84,88,0.25)]'
-                }`}
+                  }`}
               >
                 <span className="text-[13px]">{cat.emoji}</span>
                 <span>{cat.label}</span>
                 {count > 0 && (
                   <span
-                    className={`text-[11px] px-1.5 py-0.2 rounded-full ${
-                      isSelected
+                    className={`text-[11px] px-1.5 py-0.2 rounded-full ${isSelected
                         ? 'bg-white/25 text-white font-bold'
                         : 'bg-[#F2F2F7] dark:bg-[#2C2C2E] text-[#8E8E93]'
-                    }`}
+                      }`}
                   >
                     {count}
                   </span>

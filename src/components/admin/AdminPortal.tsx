@@ -110,7 +110,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     setIsCategoryModalOpen(true);
   };
 
-  const handleSaveCategory = () => {
+  const handleSaveCategory = async () => {
     const trimmed = categoryLabel.trim();
     if (!trimmed) {
       setCategoryFormError('Category name is required.');
@@ -118,51 +118,63 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     }
 
     triggerHaptic('success');
-    if (editingCategory) {
-      const updated = categoriesList.map((c) =>
-        c.id === editingCategory.id
-          ? {
+
+    try {
+      if (editingCategory) {
+        const updated = categoriesList.map((c) =>
+          c.id === editingCategory.id
+            ? {
               ...c,
               label: trimmed,
               emoji: categoryEmoji || '✨',
               color: categoryColor,
               defaultIcon: categoryIcon,
             }
-          : c
-      );
-      setCategoriesList(updated);
-      saveCategories(updated);
-    } else {
-      const slug = trimmed
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
-      const uniqueId = categoriesList.some((c) => c.id === slug)
-        ? `${slug}-${Date.now().toString().slice(-4)}`
-        : slug;
+            : c
+        );
+        setCategoriesList(updated);
+        await saveCategories(updated);
+      } else {
+        const slug = trimmed
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '');
+        const uniqueId = categoriesList.some((c) => c.id === slug)
+          ? `${slug}-${Date.now().toString().slice(-4)}`
+          : slug;
 
-      const newCat: CategoryInfo = {
-        id: uniqueId,
-        label: trimmed,
-        emoji: categoryEmoji || '✨',
-        color: categoryColor,
-        defaultIcon: categoryIcon,
-        isCustom: true,
-      };
+        const newCat: CategoryInfo = {
+          id: uniqueId,
+          label: trimmed,
+          emoji: categoryEmoji || '✨',
+          color: categoryColor,
+          defaultIcon: categoryIcon,
+          isCustom: true,
+        };
 
-      const updated = [...categoriesList, newCat];
-      setCategoriesList(updated);
-      saveCategories(updated);
+        const updated = [...categoriesList, newCat];
+        setCategoriesList(updated);
+        saveCategories(updated);
+      }
+
+      setIsCategoryModalOpen(false);
+    } catch (error) {
+      console.error('Failed to save category:', error);
+      setCategoryFormError('Could not save category. Please try again.');
     }
-
-    setIsCategoryModalOpen(false);
   };
 
-  const handleDeleteCategory = (catId: string) => {
+  const handleDeleteCategory = async (catId: string) => {
     triggerHaptic('warning');
     const updated = categoriesList.filter((c) => c.id !== catId);
-    setCategoriesList(updated);
-    saveCategories(updated);
+
+    try {
+      await saveCategories(updated);
+      setCategoriesList(updated);
+    } catch (error) {
+      console.error('Failed to delete category:', error);
+      alert('Could not delete category. Please try again.');
+    }
   };
 
   const handleResetCategories = async () => {
@@ -221,8 +233,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       selectedRoleFilter === 'all'
         ? true
         : selectedRoleFilter === 'admin'
-        ? u.role === 'admin'
-        : u.role !== 'admin';
+          ? u.role === 'admin'
+          : u.role !== 'admin';
     return matchesSearch && matchesRole;
   });
 
@@ -410,11 +422,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   triggerHaptic('light');
                   setActiveSection(item.id as AdminSection);
                 }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-[12px] text-[14px] font-medium transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-[#007AFF] text-white font-semibold shadow-xs'
-                    : 'text-[#3C3C43] dark:text-[#EBEBF5] hover:bg-black/5 dark:hover:bg-white/5'
-                }`}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-[12px] text-[14px] font-medium transition-all cursor-pointer ${isActive
+                  ? 'bg-[#007AFF] text-white font-semibold shadow-xs'
+                  : 'text-[#3C3C43] dark:text-[#EBEBF5] hover:bg-black/5 dark:hover:bg-white/5'
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <Icon className={`w-4 h-4 ${isActive ? 'text-white stroke-[2.4px]' : 'text-[#8E8E93]'}`} />
@@ -422,9 +433,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 </div>
                 {item.badge !== undefined && (
                   <span
-                    className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                      isActive ? 'bg-white/20 text-white' : 'bg-black/5 dark:bg-white/10 text-[#8E8E93]'
-                    }`}
+                    className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-black/5 dark:bg-white/10 text-[#8E8E93]'
+                      }`}
                   >
                     {item.badge}
                   </span>
@@ -469,9 +479,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <button
                 key={tab}
                 onClick={() => setActiveSection(tab)}
-                className={`px-2.5 py-1 rounded-[8px] text-[12px] font-semibold capitalize whitespace-nowrap ${
-                  activeSection === tab ? 'bg-[#007AFF] text-white' : 'text-[#8E8E93]'
-                }`}
+                className={`px-2.5 py-1 rounded-[8px] text-[12px] font-semibold capitalize whitespace-nowrap ${activeSection === tab ? 'bg-[#007AFF] text-white' : 'text-[#8E8E93]'
+                  }`}
               >
                 {tab}
               </button>
@@ -651,11 +660,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     <button
                       key={role}
                       onClick={() => setSelectedRoleFilter(role)}
-                      className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold capitalize transition-colors ${
-                        selectedRoleFilter === role
-                          ? 'bg-[#007AFF] text-white'
-                          : 'text-[#8E8E93] hover:text-black dark:hover:text-white'
-                      }`}
+                      className={`px-3 py-1.5 rounded-[10px] text-[12px] font-semibold capitalize transition-colors ${selectedRoleFilter === role
+                        ? 'bg-[#007AFF] text-white'
+                        : 'text-[#8E8E93] hover:text-black dark:hover:text-white'
+                        }`}
                     >
                       {role}
                     </button>
@@ -701,11 +709,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                             </td>
                             <td className="px-5 py-4">
                               <span
-                                className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${
-                                  user.role === 'admin' || user.uid === currentUser.uid
-                                    ? 'bg-[#AF52DE]/15 text-[#AF52DE] border-[#AF52DE]/30'
-                                    : 'bg-black/5 dark:bg-white/10 text-[#8E8E93] border-transparent'
-                                }`}
+                                className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${user.role === 'admin' || user.uid === currentUser.uid
+                                  ? 'bg-[#AF52DE]/15 text-[#AF52DE] border-[#AF52DE]/30'
+                                  : 'bg-black/5 dark:bg-white/10 text-[#8E8E93] border-transparent'
+                                  }`}
                               >
                                 {user.uid === currentUser.uid ? 'Admin (You)' : user.role || 'User'}
                               </span>
@@ -988,7 +995,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       {/* Category Editor Modal Dialog */}
       {isCategoryModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-white dark:bg-[#1C1C1E] rounded-t-[28px] sm:rounded-[24px] p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 shadow-2xl border border-[rgba(60,60,67,0.12)] dark:border-[rgba(84,84,88,0.36)] space-y-5 animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 overflow-y-auto max-h-[92dvh] sm:max-h-[90vh] ios-scroller">
+          <div className="w-full max-w-md min-h-0 bg-white dark:bg-[#1C1C1E] rounded-[24px] p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 shadow-2xl border border-[rgba(60,60,67,0.12)] dark:border-[rgba(84,84,88,0.36)] space-y-5 animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 overflow-y-auto max-h-[85dvh] overscroll-contain">
             <div className="flex items-center justify-between pb-2 border-b border-[rgba(60,60,67,0.08)] dark:border-[rgba(84,84,88,0.2)]">
               <h3 className="text-[18px] font-bold text-black dark:text-white">
                 {editingCategory ? 'Edit Category' : 'Add New Category'}
@@ -1054,9 +1061,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     key={em}
                     type="button"
                     onClick={() => setCategoryEmoji(em)}
-                    className={`w-8 h-8 rounded-[8px] flex items-center justify-center text-[16px] hover:scale-110 active:scale-95 transition-transform cursor-pointer ${
-                      categoryEmoji === em ? 'bg-[#007AFF]/20 ring-2 ring-[#007AFF]' : 'bg-black/5 dark:bg-white/5'
-                    }`}
+                    className={`w-8 h-8 rounded-[8px] flex items-center justify-center text-[16px] hover:scale-110 active:scale-95 transition-transform cursor-pointer ${categoryEmoji === em ? 'bg-[#007AFF]/20 ring-2 ring-[#007AFF]' : 'bg-black/5 dark:bg-white/5'
+                      }`}
                   >
                     {em}
                   </button>
@@ -1076,9 +1082,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     type="button"
                     onClick={() => setCategoryColor(c.hex)}
                     style={{ backgroundColor: c.hex }}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-transform active:scale-95 cursor-pointer ${
-                      categoryColor === c.hex ? 'ring-3 ring-black/20 dark:ring-white/40 scale-110' : ''
-                    }`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-transform active:scale-95 cursor-pointer ${categoryColor === c.hex ? 'ring-3 ring-black/20 dark:ring-white/40 scale-110' : ''
+                      }`}
                   >
                     {categoryColor === c.hex && <Check className="w-4 h-4 stroke-[3px]" />}
                   </button>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Habit, HabitCategory, TargetType, TimeOfDay } from '../types';
-import { loadCategories } from '../utils/categories';
+import { loadCategories, subscribeCategories } from '../utils/categories';
 import { HABIT_ICONS, IOS_SYSTEM_COLORS } from '../utils/icons';
 import { X, Trash2, Sparkles, Check } from 'lucide-react';
 import { triggerHaptic } from '../utils/haptics';
@@ -34,9 +34,11 @@ export const CupertinoAddHabitModal: React.FC<CupertinoAddHabitModalProps> = ({
   const [categoriesList, setCategoriesList] = useState(() => loadCategories());
 
   useEffect(() => {
-    const syncCategories = () => setCategoriesList(loadCategories());
-    window.addEventListener('habits_categories_updated', syncCategories);
-    return () => window.removeEventListener('habits_categories_updated', syncCategories);
+    const unsubscribe = subscribeCategories((cats) => {
+      setCategoriesList(cats);
+    });
+
+    return () => unsubscribe();
   }, []);
   const [title, setTitle] = useState('');
   const [cue, setCue] = useState('');
@@ -245,11 +247,10 @@ export const CupertinoAddHabitModal: React.FC<CupertinoAddHabitModalProps> = ({
                     key={cat.id}
                     type="button"
                     onClick={() => handleCategorySelect(cat.id)}
-                    className={`flex items-center gap-2 p-2.5 rounded-[12px] text-left transition-all duration-150 active:scale-95 ${
-                      isSelected
+                    className={`flex items-center gap-2 p-2.5 rounded-[12px] text-left transition-all duration-150 active:scale-95 ${isSelected
                         ? 'bg-[#007AFF] text-white shadow-xs font-semibold'
                         : 'bg-[#F2F2F7] dark:bg-[#2C2C2E] text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 border border-[rgba(60,60,67,0.06)] dark:border-[rgba(84,84,88,0.2)]'
-                    }`}
+                      }`}
                   >
                     <span className="text-base shrink-0">{cat.emoji}</span>
                     <span className="text-[13px] truncate flex-1">{cat.label}</span>
@@ -275,9 +276,8 @@ export const CupertinoAddHabitModal: React.FC<CupertinoAddHabitModalProps> = ({
                       triggerHaptic('light');
                       setColor(c.hex);
                     }}
-                    className={`w-8 h-8 rounded-full transition-transform shrink-0 ${
-                      color === c.hex ? 'scale-110 ring-2 ring-offset-2 ring-[#007AFF] dark:ring-offset-black' : 'hover:scale-105'
-                    }`}
+                    className={`w-8 h-8 rounded-full transition-transform shrink-0 ${color === c.hex ? 'scale-110 ring-2 ring-offset-2 ring-[#007AFF] dark:ring-offset-black' : 'hover:scale-105'
+                      }`}
                     style={{ backgroundColor: c.hex }}
                   />
                 ))}
@@ -300,11 +300,10 @@ export const CupertinoAddHabitModal: React.FC<CupertinoAddHabitModalProps> = ({
                         triggerHaptic('light');
                         setIcon(key);
                       }}
-                      className={`p-2.5 rounded-[12px] flex items-center justify-center transition-all ${
-                        isSelected
+                      className={`p-2.5 rounded-[12px] flex items-center justify-center transition-all ${isSelected
                           ? 'bg-[#007AFF] text-white shadow-xs'
                           : 'bg-[#F2F2F7] dark:bg-[#2C2C2E] text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5'
-                      }`}
+                        }`}
                     >
                       <IconComp className="w-5 h-5 stroke-[2.2px]" />
                     </button>
@@ -323,22 +322,20 @@ export const CupertinoAddHabitModal: React.FC<CupertinoAddHabitModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setTargetType('boolean')}
-                  className={`px-3 py-1 text-[13px] font-medium rounded-[7px] transition-all ${
-                    targetType === 'boolean'
+                  className={`px-3 py-1 text-[13px] font-medium rounded-[7px] transition-all ${targetType === 'boolean'
                       ? 'bg-white dark:bg-[#636366] text-black dark:text-white shadow-xs'
                       : 'text-[#8E8E93]'
-                  }`}
+                    }`}
                 >
                   Yes / No
                 </button>
                 <button
                   type="button"
                   onClick={() => setTargetType('numeric')}
-                  className={`px-3 py-1 text-[13px] font-medium rounded-[7px] transition-all ${
-                    targetType === 'numeric'
+                  className={`px-3 py-1 text-[13px] font-medium rounded-[7px] transition-all ${targetType === 'numeric'
                       ? 'bg-white dark:bg-[#636366] text-black dark:text-white shadow-xs'
                       : 'text-[#8E8E93]'
-                  }`}
+                    }`}
                 >
                   Target Goal
                 </button>

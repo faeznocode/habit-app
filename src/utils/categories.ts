@@ -53,14 +53,17 @@ function cacheLocally(categories: CategoryInfo[]): void {
  * Save categories to Firestore (admin-only write) AND update the local cache.
  */
 export async function saveCategories(categories: CategoryInfo[]): Promise<void> {
-  // Optimistically update local cache first for instant UI response
-  cacheLocally(categories);
-
   try {
-    await setDoc(FIRESTORE_DOC, { list: categories, updatedAt: new Date().toISOString() });
+    await setDoc(FIRESTORE_DOC, {
+      list: categories,
+      updatedAt: new Date().toISOString(),
+    });
+
+    cacheLocally(categories);
     console.log(`✅ [Categories] Saved ${categories.length} categories to Firestore.`);
   } catch (error) {
-    console.error('🔥 [Categories] Failed to save categories to Firestore:', error);
+    console.error('🔥 [Categories] Failed to save categories:', error);
+    throw error;
   }
 }
 
@@ -78,7 +81,7 @@ export function subscribeCategories(onUpdate: (cats: CategoryInfo[]) => void): U
     (snap) => {
       if (snap.exists()) {
         const data = snap.data();
-        if (Array.isArray(data?.list) && data.list.length > 0) {
+        if (Array.isArray(data?.list)) {
           cacheLocally(data.list);
           onUpdate(data.list);
         }
@@ -105,7 +108,7 @@ export async function fetchCategories(): Promise<CategoryInfo[]> {
     const snap = await getDoc(FIRESTORE_DOC);
     if (snap.exists()) {
       const data = snap.data();
-      if (Array.isArray(data?.list) && data.list.length > 0) {
+      if (Array.isArray(data?.list)) {
         cacheLocally(data.list);
         return data.list as CategoryInfo[];
       }
